@@ -10,7 +10,7 @@ Linux 期末步骤（x代表小学号）
 
 ## 步骤
 ### DHCP 
-##### 在DHCP服务器
+#### 在DHCP服务器
 1. 挂载本地yum源(根据各自yum配置文件挂载)
 2. 安装dhcp包，`yum install dhcp -y`
 3. 确认ip地址无误后，vim 编辑配置文件`vim /etc/dhcp/dhcpd.conf`
@@ -29,12 +29,13 @@ subnet 192.168.x.0 netmask 255.255.255.0 {
 }
 ```
 6. 保存退出，`systemctl start dhcpd` 启动服务
+#### 客户端测试
 ***客户端测试：*** 将网卡设为通过DHCP服务获取IP地址，将网卡关闭再打开，查看IP是否正确，正常情况下是(192.168.x.12)，到这DHCP要求就完成了
 
 ### DNS
-##### 主DNS服务器
-1. 通过yum源安装bind`yum install bind -y`
-2. 修改两个`any`, `vim /etc/named.conf`
+#### 主DNS服务器
+1. 通过yum源安装bind: `yum install bind -y`
+2. 修改两个any, `vim /etc/named.conf`
 3. `vim /etc/named.rfc1912.zones`， 在文件最后添加正向反向信息
 ```
 zone "jnet9.com" IN {
@@ -87,7 +88,7 @@ $TTL    1D
 ```
 6. `systemctl start named`启动dns服务
 7. `iptables -F` 关闭防火墙 `setenforce 0` 关闭SELinux
-##### 辅助DNS服务器
+#### 辅助DNS服务器
 1. 安装bind `yum install bind -y`
 2. 修改两个`any`, `vim /etc/named.conf`
 3. `vim /etc/named.rfc1912.zones`， 在文件最后添加正向反向信息
@@ -107,11 +108,12 @@ zone "x.168.192.in-addr.arpa" IN {
 4. `systemctl start named` 启动DNS服务
 5. `iptables -F` 关闭防火墙 `setenforce 0` 关闭SELinux
 
+#### 客户端测试
 ***客户端测试：*** `nslookup 192.168.x.4` , `nslookup 192.168.x.5` , `nslookup 192.168.x.10` ,   
 `nslookup dns.jnet9.com` , `nslookup samba.jnet9.com` ······ 随便测几个就行
 
 ### Samba 
-##### 在Samba服务器
+#### 在Samba服务器
 1. 通过yum源安装(客户端也要安装)：`yum install samba -y`, `yum install samba-client -y`, `yum install cifs-utils -y` 
 2. 创建共享文件夹和用户
 ```
@@ -166,7 +168,7 @@ Added user tech_user.
 然后smbclient 测试  `smbclient //192.168.x.4/boss -U boss` 输入刚刚设置的密码，分别用两个用户去测试文件权限
 
 ### NFS
-##### 在NFS服务器
+#### 在NFS服务器
 1. 安装`yum install nfs-utils -y` , `yum install rpcbind -y` （客户端也要安装）
 2. 启动服务， 关闭防火墙和SELinux(刚才关了这里就可以不用关了)
 ```
@@ -184,6 +186,7 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/nfs-server.serv
 ```
 /dir  *(rw,anonuid=1001,anongid=1001)
 ```
+#### 客户端测试
 ***客户端测试：***   创建挂载目录，`mkdir /nfstest`
 `showmount -e 192.168.x.4`
 ```
@@ -198,4 +201,4 @@ Export list for 192.168.43.4:
 `ls /nfstest` 查看文件列表是否有nfs服务器刚刚创建的test文件，有就说明成功了，可以用`cat /nfstest/test`，确认内容是`hhhhhh`
 
 ### HTTP
-##### web服务器
+#### web服务器
