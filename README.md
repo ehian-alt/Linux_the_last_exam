@@ -4,11 +4,13 @@ Linux 期末步骤（x代表小学号）
 * 第一台（主DNS/DHCP 服务器）：192.168.x.5/24
 * 第二台（samba/nfs/辅助dns 服务器）：192.168.x.4/24
 * 第三台（web/ftp 服务器）：192.168.x.10/24
-* 第四台（client 客户测试端）：通过dhcp服务器提供的DHCP服务来获取IP  **要在 `编辑 > 虚拟网络编辑器` 中将net模式中的，`使用本地DHCP服务将IP地址分配给虚拟机`关闭** 
+* 第四台（client 客户测试端）：通过dhcp服务器提供的DHCP服务来获取IP  
+
+**要在 `编辑 > 虚拟网络编辑器` 中将net模式中的，`使用本地DHCP服务将IP地址分配给虚拟机`关闭** 
 
 ![image](https://github.com/ehian-alt/Linux_the_last_exam/assets/79576798/fa68bba9-6381-4d5b-95ef-c1057f1b8ab9)
 
-## 步骤
+## 服务器配置步骤
 ### DHCP 
 #### 在DHCP服务器
 1. 挂载本地yum源(根据各自yum配置文件挂载)
@@ -63,7 +65,7 @@ dhcp    IN      A       192.168.x.5
 samba   IN      A       192.168.x.4
 nfs     IN      A       192.168.x.4
 dns1    IN      A       192.168.x.4
-web     IN      A       192.168.x.10
+www     IN      A       192.168.x.10
 ftp     IN      A       192.168.x.10
 client  IN      A       192.168.x.12
 ```
@@ -82,7 +84,7 @@ $TTL    1D
 4       IN      PTR     samba.jnet9.com.
 4       IN      PTR     nfs.jnet9.com.
 4       IN      PTR     dns1.jnet9.com.
-10      IN      PTR     web.jnet9.com.
+10      IN      PTR     www.jnet9.com.
 10      IN      PTR     ftp.jnet9.com.
 12      IN      PTR     client.jnet9.com.
 ```
@@ -202,3 +204,12 @@ Export list for 192.168.43.4:
 
 ### HTTP
 #### web服务器
+1. yum 安装 Apache 服务 `yum install httpd -y`
+2. 启动HTTP，关闭防火墙SELinux
+```
+[root@RHEL7-2 ~]# systemctl start httpd
+[root@RHEL7-2 ~]# systemctl enable httpd
+Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service to /usr/lib/systemd/system/httpd.service.
+[root@RHEL7-2 ~]# iptables -F
+[root@RHEL7-2 ~]# setenforce 0
+``` 
