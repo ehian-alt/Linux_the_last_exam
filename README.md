@@ -204,7 +204,7 @@ Export list for 192.168.43.4:
 
 ### HTTP  **这里我按照期末HTTP三个要求顺序写的， 也可以直接一次性到位**
 #### web服务器
-1. yum 安装 Apache 服务 `yum install httpd -y`
+1. 挂在本地yum 安装 Apache 服务 `yum install httpd -y`
 2. 启动HTTP，关闭防火墙SELinux
 ```
 [root@RHEL7-2 ~]# systemctl start httpd
@@ -216,9 +216,9 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service t
 3. 创建文件夹
 ```
 [root@RHEL7-2 ~]# mkdir /web/www/web1 -p
-[root@RHEL7-2 ~]# mkdir /web/www/web2 -p
-[root@RHEL7-2 ~]# mkdir /web/www/web3 -p
-[root@RHEL7-2 ~]# mkdir /web/www/web4 -p
+[root@RHEL7-2 ~]# mkdir /web/www/web2
+[root@RHEL7-2 ~]# mkdir /web/www/web3
+[root@RHEL7-2 ~]# mkdir /web/www/web4
 ```
 4. 分别创建测试主页面(index.html), 并分别写上内容(This is web1. This is web2. This is web3. This is web4.)
 ```
@@ -229,6 +229,12 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service t
 ```
 ##### 要求一：
 * 编辑文件`vim /etc/httpd/conf/httpd.conf`,添加如下内容
+
+![image](https://github.com/ehian-alt/Linux_the_last_exam/assets/79576798/143e8002-6072-4c49-94e2-cd0c39bea7d4)
+
+![image](https://github.com/ehian-alt/Linux_the_last_exam/assets/79576798/ce77560c-e085-4d51-a5fd-a519402d4fb4)
+
+`Listen 8080`   !!! 这个要放在第43行
 ```
 <Directory "/web/www/web1">
     AllowOverride None
@@ -237,16 +243,24 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service t
     AuthUserFile /web/www/web1/.htpasswd
     Require valid-user
 </Directory>
+
+<Directory "/web/www/">
+    AllowOverride None
+    Order allow,deny
+    Allow from all
+    Require all granted
+</Directory>
 ```
+* `htpasswd -c /web/www/web1/.htpasswd liaoliangcai` 创建 .htpasswd 文件存储用户名和密码
 * 创建vhost文件 `vim /etc/httpd/conf.d/vhost.conf`
 ```
 <VirtualHost 192.168.x.10:80>
-DOcumentRoot /web/www/web1
+DocumentRoot /web/www/web1
 ServerName www.jnet9.com
 </VirtualHost>
 
 <VirtualHost 192.168.x.10:8080>
-DOcumentRoot /web/www/web2
+DocumentRoot /web/www/web2
 ServerName www.jnet9.com
 </VirtualHost>
 ```
@@ -258,30 +272,23 @@ ServerName www.jnet9.com
 * 在vhost文件中添加内容 `vim /etc/httpd/conf.d/vhost.conf`
 ```
 <VirtualHost 192.168.x.11>
-DOcumentRoot /web/www/web3
+DocumentRoot /web/www/web3
 ServerName www.jnet9.com
 </VirtualHost>
-```
-* 编辑文件`vim /etc/httpd/conf/httpd.conf`,添加如下内容
-```
-<Directory "/web/www/">
-    AllowOverride None
-    Order allow,deny
-    Allow from all
-    Require all granted
-</Directory>
 ```
 ##### 要求三：
 * 创建文件夹 `mkdir /web/www/web4/jacky`
 * 编辑jacky个人网页 `vim /web/www/web4/jacky/index.html` , 输入Jacky 个人网页测试信息 如：`Jacky page`
-* `www.hei8.com` 不在DNS资源记录当中，需要添加到hosts文件中, 文末添加内容 `192.168.43.10 www.hei8.com` ， `www.jnet9.com` 可以通过dns服务器解析得到 
+* `www.hei8.com` 不在DNS资源记录当中，需要添加到hosts文件中  
+* `vim /etc/hosts`文末添加内容 `192.168.43.10 www.hei8.com`    
+ 而`www.jnet9.com`则不需要，因为可以通过dns服务器解析得到 
 ```
 [root@RHEL7-2 ~]# vim /etc/hosts
 ```
 * 在vhost文件中添加内容 `vim /etc/httpd/conf.d/vhost.conf`
 ```
 <VirtualHost 192.168.x.10:80>
-DOcumentRoot /web/www/web4
+DocumentRoot /web/www/web4
 ServerName www.hei8.com
 </VirtualHost>
 ```
@@ -295,6 +302,30 @@ ServerName www.hei8.com
 ***最后重启服务`systemctl restart httpd` ***
 
 #### 客户端测试
-***客户端测试：*** 分别在客户端浏览器输入 `www.jnet9.com` , `192.168.x.10:8080` , `192.168.x.11` , `www.hei8.com` , `www.hei8.com/jacky`
+***客户端测试：*** `vim /etc/hosts`   添加 `192.168.x.10 www.hei8.com`
+
+分别在客户端浏览器输入 `www.jnet9.com` , `192.168.x.10:8080` , `192.168.x.11` , `www.hei8.com` , `www.hei8.com/jacky`
 
 ### FTP
+#### FTP服务器
+1. `yum install vsftpd -y`
+2. `useradd team1`
+3. `passwd team1`
+4. `vim /etc/vsftpd/vsftpd.conf`  添加以下信息
+```
+local_enable=YES
+local_root=/web/www/
+chroot_local_user=YES
+chroot_list_enable=YES
+chroot_list_file=/etc/vsftpd/chroot_list
+allow_writeable_chroot=YES
+```
+5. `vim /etc/vsftpd/chroot_list` 写入 `team1`
+6. 关闭防火墙SELinux (`iptables -F` , `setenforce 0`)
+7. `chmod -R o+x /web/www/`
+8. `chmod 777 /web/www`
+9. `systemctl restart vsftpd`
+
+#### 客户端测试
+***客户端测试：*** 安装：`yum install ftp`，`ftp 192.168.x.10`. 然后再输入用户名 `team1` 密码。
+使用`pwd` ,  `mkdir test`命令不报错则成功
