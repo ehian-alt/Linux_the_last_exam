@@ -165,7 +165,7 @@ Added user tech_user.
 [root@RHEL7-1 ~]# iptables -F
 [root@RHEL7-1 ~]# setenforce 0
 ```
-
+#### 客户端测试
 ***客户端测试：*** 首先确认这三个安装好了：`yum install samba -y`, `yum install samba-client -y`, `yum install cifs-utils -y`  
 然后smbclient 测试  `smbclient //192.168.x.4/boss -U boss` 输入刚刚设置的密码，分别用两个用户去测试文件权限
 
@@ -201,6 +201,29 @@ Export list for 192.168.43.4:
 
 客户端nfs挂载: `mount -t nfs 192.168.x.4:/dir /nfstest`
 `ls /nfstest` 查看文件列表是否有nfs服务器刚刚创建的test文件，有就说明成功了，可以用`cat /nfstest/test`，确认内容是`hhhhhh`
+### FTP
+#### FTP服务器
+1. `yum install vsftpd -y`
+2. `useradd team1`
+3. `passwd team1`
+4. `vim /etc/vsftpd/vsftpd.conf`  添加以下信息
+```
+local_enable=YES
+local_root=/web/www/
+chroot_local_user=YES
+chroot_list_enable=YES
+chroot_list_file=/etc/vsftpd/chroot_list
+allow_writeable_chroot=YES
+```
+5. `vim /etc/vsftpd/chroot_list` 写入 `team1`
+6. 关闭防火墙SELinux (`iptables -F` , `setenforce 0`)
+7. `chmod -R o+x /web/www/`
+8. `chmod 777 /web/www`
+9. `systemctl restart vsftpd`
+
+#### 客户端测试
+***客户端测试：*** 安装：`yum install ftp`，`ftp 192.168.x.10`. 然后再输入用户名 `team1` 密码。
+使用`pwd` ,  `mkdir test`命令不报错则成功
 
 ### HTTP  **这里我按照期末HTTP三个要求顺序写的， 也可以直接一次性到位**
 #### web服务器
@@ -215,7 +238,7 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service t
 ``` 
 3. 创建文件夹
 ```
-[root@RHEL7-2 ~]# mkdir /web/www/web1 -p
+[root@RHEL7-2 ~]# mkdir /web/www/web1
 [root@RHEL7-2 ~]# mkdir /web/www/web2
 [root@RHEL7-2 ~]# mkdir /web/www/web3
 [root@RHEL7-2 ~]# mkdir /web/www/web4
@@ -306,26 +329,4 @@ ServerName www.hei8.com
 
 分别在客户端浏览器输入 `www.jnet9.com` , `192.168.x.10:8080` , `192.168.x.11` , `www.hei8.com` , `www.hei8.com/jacky`
 
-### FTP
-#### FTP服务器
-1. `yum install vsftpd -y`
-2. `useradd team1`
-3. `passwd team1`
-4. `vim /etc/vsftpd/vsftpd.conf`  添加以下信息
-```
-local_enable=YES
-local_root=/web/www/
-chroot_local_user=YES
-chroot_list_enable=YES
-chroot_list_file=/etc/vsftpd/chroot_list
-allow_writeable_chroot=YES
-```
-5. `vim /etc/vsftpd/chroot_list` 写入 `team1`
-6. 关闭防火墙SELinux (`iptables -F` , `setenforce 0`)
-7. `chmod -R o+x /web/www/`
-8. `chmod 777 /web/www`
-9. `systemctl restart vsftpd`
 
-#### 客户端测试
-***客户端测试：*** 安装：`yum install ftp`，`ftp 192.168.x.10`. 然后再输入用户名 `team1` 密码。
-使用`pwd` ,  `mkdir test`命令不报错则成功
