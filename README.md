@@ -117,7 +117,12 @@ zone "x.168.192.in-addr.arpa" IN {
 ### Samba 
 #### 在Samba服务器
 1. 通过yum源安装(客户端也要安装)：`yum install samba -y`, `yum install samba-client -y`, `yum install cifs-utils -y` 
-2. 创建共享文件夹和用户
+2. 把本地ip跟主机名添加到 /etc/hosts 最后一行
+![image](https://github.com/ehian-alt/Linux_the_last_exam/assets/79576798/69b6d50d-c65a-4135-9d78-898a0851f8ef)
+
+![image](https://github.com/ehian-alt/Linux_the_last_exam/assets/79576798/4fa932ec-f088-4e8f-ad4c-e354f9462944)
+
+3. 创建共享文件夹和用户
 ```
 [root@RHEL7-1 ~]# mkdir /boss
 [root@RHEL7-1 ~]# mkdir /tech
@@ -314,13 +319,6 @@ ServerName www.jnet9.com
 DocumentRoot /web/www/web4
 ServerName www.hei8.com
 </VirtualHost>
-```
-* 编辑文件`vim /etc/httpd/conf/httpd.conf`,添加如下内容
-```
-<Directory /web/www/web4>
-    AllowOverride None
-    Require all granted
-</Directory>
 ```
 ***最后重启服务`systemctl restart httpd` ***
 
