@@ -193,6 +193,8 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/nfs-server.serv
 ```
 /dir  *(rw,anonuid=1001,anongid=1001)
 ```
+5. 重启服务
+   `systemctl restart nfs`, `systemctl restart fpcbind`
 #### 客户端测试
 ***客户端测试：***   创建挂载目录，`mkdir /nfstest`
 `showmount -e 192.168.x.4`
@@ -211,7 +213,8 @@ Export list for 192.168.43.4:
 1. `yum install vsftpd -y`
 2. `useradd team1`
 3. `passwd team1`
-4. `vim /etc/vsftpd/vsftpd.conf`  添加以下信息
+4. `mkdir /web/www -p`
+5. `vim /etc/vsftpd/vsftpd.conf`  添加以下信息
 ```
 local_enable=YES
 local_root=/web/www/
