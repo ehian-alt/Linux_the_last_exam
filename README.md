@@ -98,13 +98,13 @@ $TTL    1D
 zone "jnet9.com" IN {
         type slave;
         file "slave/slave.jnet9.com.zone";
-        masters { 192.168.x.5; };
+        masters { 192.168.43.5; };
 };
 
-zone "x.168.192.in-addr.arpa" IN {
+zone "43.168.192.in-addr.arpa" IN {
         type slave;
-        file "slave/slave.x.168.192.in-addr.arpa.zone";
-        masters { 192.168.x.5; };
+        file "slave/slave.43.168.192.in-addr.arpa.zone";
+        masters { 192.168.43.5; };
 };
 ```
 4. `systemctl start named` 启动DNS服务
